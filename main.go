@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -14,6 +15,13 @@ import (
 func main() {
 	// Flags に net.FlagUp があれば接続されてる
 	connected := checkNetworkConnect()
+	keyword := "坂井泉水"
+	baseURL := "https://google.com/search"
+	escapedURL := baseURL + "?q=" + url.QueryEscape(keyword)
+	fmt.Println(escapedURL)
+	// if url.PathEscape(urlStr) == nil {
+	// 	fmt.Println("urlStr is nil")
+	// }
 
 	if !connected{
 		fmt.Println("ネットに接続されていません")
@@ -26,7 +34,7 @@ func main() {
 	// デフォルトだとスマホ版のページが帰ってくる 2023-0612現在
 	// そのため動作確認のしやすさなどからパソコン版のページを使用するようにするためにパソコン版のユーザーエージェントを設定する
 	header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36");
-	req, err := http.NewRequest("GET", "https://google.com/search?q=坂井泉水", nil)
+	req, err := http.NewRequest("GET", escapedURL, nil)
 	if err != nil {
 		fmt.Println("failed to request page")
 		os.Exit(1)
@@ -65,10 +73,12 @@ func checkNetworkConnect() bool {
 		if v.Flags&net.FlagLoopback == net.FlagLoopback {
 			continue
 		}
-
 		if strings.ToLower(v.Name) == "wi-fi" {
 			if v.Flags&net.FlagUp == net.FlagUp {
-				fmt.Println("Wi-Fi is up")
+				return true
+			}
+		} else if strings.ToLower(v.Name) == "イーサネット" {
+			if v.Flags&net.FlagUp == net.FlagUp {
 				return true
 			}
 		}
